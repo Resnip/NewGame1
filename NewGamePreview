@@ -1,0 +1,389 @@
+//
+//  Game.c
+//  
+//
+//  Created by Dorian Dandoy on 3/1/17.
+//
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct tilestruct
+{
+    char tileCharacter;
+    int canPass;        //0 can pass, 1 cannot pass
+} tilestruct;
+
+
+
+void printGame(tilestruct singletile[100]);
+void setWalls(tilestruct singletile[100]);
+char getSingleLet();
+int getMove();          //1 = up, 2 = left, 3 = down, 4 = right
+int getGameOption();    //1 = move, 2 = reset, 3 = quit
+int resetBoard(tilestruct singletile[100]);
+int checkCanMove(tilestruct singletile[100], int *currentlyonTile, int direction);
+char choseIcon();
+int moveOption(tilestruct singletile[100], int *currentlyonTile, char *wasTile);
+void checkMovedToTile(char movedtoTileChar);
+
+
+//MAIN vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+int main()
+{
+    tilestruct singletile[100];
+    int counter = 0;
+    int error = 0;      //0 = no error, 1 = error, 3 == quit
+    int option;
+    int currentlyonTile;
+    char wasTile;
+    int turnInt = 0;     //what turn is it
+    int quitOption = 0;     //when set to 1, game *should* quit
+    int backOption = 0;
+    
+    currentlyonTile = resetBoard(&singletile[0]);        //Starting reset
+    wasTile = ' ';                                    //value under you
+    
+    do
+    {
+        option = getGameOption();
+        
+        switch (option)
+        {
+            case 1:
+                do
+                {
+                    backOption = moveOption(singletile, &currentlyonTile, &wasTile);
+                    turnInt++;
+                } while (backOption == 0);
+                break;
+            case 2:
+                printGame(singletile);
+                break;
+            case 3:
+                currentlyonTile = resetBoard(singletile);
+                wasTile = 0;
+                break;
+            case 4:
+                printf("You have quit\n");
+                quitOption = 1;
+                break;
+            default:
+                printf("Invalid option!\n");
+                break;
+        }
+        turnInt++;
+    } while (turnInt != 100 && quitOption == 0);
+    
+    return 0;
+}
+//MAIN ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+int moveOption(tilestruct singletile[100], int *currentlyonTile, char *wasTile)
+{
+    int error = 0;
+    int moveInt;
+    int movetoTile;
+    char changedTile;
+    int quitOption = 0;
+    
+    moveInt = getMove();
+    
+    switch (moveInt)
+    {
+        case 1:
+            error = checkCanMove(singletile, currentlyonTile, moveInt);
+            if (error == 0)
+            {
+                movetoTile = *currentlyonTile - 10;
+                changedTile = singletile[movetoTile].tileCharacter;
+                singletile[movetoTile].tileCharacter = singletile[*currentlyonTile].tileCharacter;
+                singletile[*currentlyonTile].tileCharacter = *wasTile;
+                *currentlyonTile = movetoTile;
+                *wasTile = changedTile;
+                printGame(singletile);
+            }
+            break;
+        case 2:
+            error = checkCanMove(singletile, currentlyonTile, moveInt);
+            if (error == 0)
+            {
+                movetoTile = *currentlyonTile - 1;
+                changedTile = singletile[movetoTile].tileCharacter;
+                singletile[movetoTile].tileCharacter = singletile[*currentlyonTile].tileCharacter;
+                singletile[*currentlyonTile].tileCharacter = *wasTile;
+                *currentlyonTile = movetoTile;
+                *wasTile = changedTile;
+                printGame(singletile);
+            }
+            break;
+        case 3:
+            error = checkCanMove(singletile, currentlyonTile, moveInt);
+            if (error == 0)
+            {
+                movetoTile = *currentlyonTile + 10;
+                changedTile = singletile[movetoTile].tileCharacter;
+                singletile[movetoTile].tileCharacter = singletile[*currentlyonTile].tileCharacter;
+                singletile[*currentlyonTile].tileCharacter = *wasTile;
+                *currentlyonTile = movetoTile;
+                *wasTile = changedTile;
+                printGame(singletile);
+            }
+            break;
+        case 4:
+            error = checkCanMove(singletile, currentlyonTile, moveInt);
+            if (error == 0)
+            {
+                movetoTile = *currentlyonTile + 1;
+                changedTile = singletile[movetoTile].tileCharacter;
+                singletile[movetoTile].tileCharacter = singletile[*currentlyonTile].tileCharacter;
+                singletile[*currentlyonTile].tileCharacter = *wasTile;
+                *currentlyonTile = movetoTile;
+                *wasTile = changedTile;
+                printGame(singletile);
+            }
+            break;
+        case 5:
+            printf("Not yet implemented\n");
+            break;
+        case 6:
+            printf("You wait one turn\n");
+            break;
+        case 7:
+            quitOption = 1;
+            break;
+    }
+    checkMovedToTile(*wasTile);
+    return quitOption;
+}
+void checkMovedToTile(char movedtoTile)
+{
+    //printf("entered checkMovedToTile\n");
+    if (movedtoTile == '#')
+    {
+        
+    }
+    return;
+}
+int checkCanMove(tilestruct singletile[100], int *currentlyonTile, int direction)
+{
+    int movetoTile;
+    int error = 0;
+    
+    switch (direction)
+    {
+        case 1:
+            movetoTile = *currentlyonTile - 10;
+            break;
+        case 2:
+            movetoTile = *currentlyonTile - 1;
+            break;
+        case 3:
+            movetoTile = *currentlyonTile + 10;
+            break;
+        case 4:
+            movetoTile = *currentlyonTile + 1;
+            break;
+    }
+
+    if (*currentlyonTile < 9 && direction == 1)      //prevents moving up
+    {
+        printf("You cannot move up!\n");
+        error = 1;
+    }
+    if ((*currentlyonTile == 0 || *currentlyonTile == 10 || *currentlyonTile == 20 || *currentlyonTile == 30 || *currentlyonTile == 40 || *currentlyonTile == 50 || *currentlyonTile == 60 || *currentlyonTile == 70 || *currentlyonTile == 80 || *currentlyonTile == 90) && direction == 2)      //prevents moving left
+    {
+        printf("You cannot move left!\n");
+        error = 1;
+    }
+    if (*currentlyonTile > 90 && direction == 3)
+    {
+        printf("You cannot move down!\n");
+        error = 1;
+    }
+    if ((*currentlyonTile == 9 || *currentlyonTile == 19 || *currentlyonTile == 29 || *currentlyonTile == 39 || *currentlyonTile == 49 || *currentlyonTile == 59 || *currentlyonTile == 69 || *currentlyonTile == 79 || *currentlyonTile == 89 || *currentlyonTile == 99) && direction == 4)
+    {
+        printf("You cannot move right!\n");
+        error = 1;
+    }
+    if (singletile[movetoTile].canPass == 1)
+    {
+        error = 1;
+        printf("You cannot move there!\n");
+    }
+    return error;
+}
+int resetBoard(tilestruct singletile[100])
+{
+    //printf("entered resetBoard\n");
+    int counter = 0;
+    int error = 0;
+    int currentlyonTile = 11;
+    
+    while (counter < 100)           //sets all tiles to 0
+    {
+        singletile[counter].tileCharacter = ' ';
+        counter++;
+    }
+    counter = 0;
+    
+    setWalls(singletile);
+    singletile[currentlyonTile].tileCharacter = choseIcon();      //sets player (D) on the 11th tiles
+    singletile[34].tileCharacter = '#';        //test, erase then when needed
+    singletile[74].tileCharacter = '#';
+    
+    printGame(singletile);
+
+    return currentlyonTile;
+}
+char choseIcon()
+{
+    //printf("entered choseIcon\n");
+    char icon;
+    int error = 0;
+    
+    do
+    {
+        error = 0;
+        printf("Chose a letter to be your Icon\n");
+        icon = getSingleLet();
+        if ((icon < 65 || icon > 90) && (icon < 97 || icon > 122))
+            {
+                printf("Not a letter! (seriously do you not know what a letter is......)\n");
+                error = 1;
+            }
+            } while (error != 0);
+   
+    return icon;
+}
+void printGame(tilestruct singletile[100])       //function used only to print the game
+{
+    //printf("entered printGame\n");
+    int counter = 0;
+    
+    while (counter < 100)
+    {
+        printf(" %c", singletile[counter].tileCharacter);
+        if (counter == 9 || counter == 19 || counter == 29 || counter == 39 || counter == 49 || counter == 59 || counter == 69 || counter == 79 || counter == 89 || counter == 99)
+        {
+            printf("\n");
+        }
+        counter++;
+    }
+    return;
+}
+
+void setWalls(tilestruct singletile[100])
+{
+    //printf("entered setWalls\n");
+    int counter = 0;
+    
+    while (counter < 100)
+    {
+        if (counter == 0 || counter == 1 || counter == 2 || counter == 3 || counter == 4 || counter == 5 || counter == 6 || counter == 7 || counter == 8 || counter == 9 || counter == 10 || counter == 19 || counter == 20 || counter == 29 || counter == 30 || counter == 39 || counter == 40 || counter == 49 || counter == 50 || counter == 59 || counter == 60 || counter == 69 || counter == 70 || counter == 79 || counter == 80 || counter == 89 || counter == 90 || counter == 91 || counter == 92 || counter == 93 || counter == 94 || counter == 95 || counter == 96 || counter == 97 || counter == 98 || counter == 99 || counter == 100)
+        {
+            singletile[counter].tileCharacter = '#';
+            singletile[counter].canPass = 1;
+        }
+        counter++;
+    }
+    return;
+}
+
+char getSingleLet()
+{
+    char c;
+    
+    //printf("entered getSingleLet\n");
+    fflush(stdin);
+    
+    c = getchar();
+    
+    while (getchar() != '\n'){}     //clears buffer
+    
+    return c;
+}
+
+int getMove()
+{
+    //printf("entered getMove\n");
+    
+    char move;
+    int error = 0;
+    int moveInt;
+    
+    do
+    {
+        error = 0;
+        printf("WASD:Move --- 1:Use Item --- 2:Wait --- 3:Back\n");
+        move = getSingleLet();
+        switch (move)
+        {
+            case 'w':
+                moveInt = 1;
+                break;
+            case 'a':
+                moveInt = 2;
+                break;
+            case 's':
+                moveInt = 3;
+                break;
+            case 'd':
+                moveInt = 4;
+                break;
+            case '1':
+                moveInt = 5;
+                break;
+            case '2':
+                moveInt = 6;
+                break;
+            case '3':
+                moveInt = 7;
+                break;
+            default :
+                printf("Invalid move<\n");
+                error = 1;
+        }
+        
+    } while (error != 0);
+    return moveInt;
+}
+
+int getGameOption()
+{
+    //printf("entered getGameOption\n");
+    
+    int error = 0;
+    int option;
+    char let;
+    
+    do
+    {
+        error = 0;
+        printf("What would you like to do?\n1:Move --- 2:Show Board --- 3:Reset --- 4:Quit\n");
+        let = getSingleLet();
+        switch (let)
+        {
+            case '1':
+                option = 1;
+                break;
+            case '2':
+                option = 2;
+                break;
+            case '3':
+                option = 3;
+                break;
+            case '4':
+                option = 4;
+                break;
+            default :
+                printf("Invalid move\n");
+                error = 1;
+        }
+        
+    } while (error != 0);
+    return option;
+}
+
+
